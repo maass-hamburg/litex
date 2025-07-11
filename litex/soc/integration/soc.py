@@ -2327,7 +2327,7 @@ class LiteXSoC(SoC):
                     ev.block2mem_dma = EventSourcePulse(description="Block2Mem DMA terminated.")
                 if "write" in mode:
                     ev.mem2block_dma = EventSourcePulse(description="Mem2Block DMA terminated.")
-                ev.cmd_done  = EventSourceLevel(description="Command completed.")
+                ev.cmd_done  = EventSourceProcess(description="Command completed.", edge="rising")
                 ev.finalize()
                 if "read" in mode:
                     self.comb += ev.block2mem_dma.trigger.eq(block2mem.irq)
