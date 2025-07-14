@@ -2322,19 +2322,19 @@ class LiteXSoC(SoC):
 
                 # Interrupts.
                 self.ev = ev = EventManager()
-                ev.card_detect = EventSourcePulse(description="SDCard has been ejected/inserted.")
+                ev.card_detect = EventSourceProcess(description="SDCard has been ejected/inserted.", edge="any")
                 if "read" in mode:
-                    ev.block2mem_dma = EventSourcePulse(description="Block2Mem DMA terminated.")
+                    ev.block2mem_dma = EventSourceProcess(description="Block2Mem DMA terminated.", edge="rising")
                 if "write" in mode:
-                    ev.mem2block_dma = EventSourcePulse(description="Mem2Block DMA terminated.")
+                    ev.mem2block_dma = EventSourceProcess(description="Mem2Block DMA terminated.", edge="rising")
                 ev.cmd_done  = EventSourceProcess(description="Command completed.", edge="rising")
                 ev.finalize()
                 if "read" in mode:
-                    self.comb += ev.block2mem_dma.trigger.eq(block2mem.irq)
+                    self.comb += ev.block2mem_dma.trigger.eq(block2mem.dma.done)
                 if "write" in mode:
-                    self.comb += ev.mem2block_dma.trigger.eq(mem2block.irq)
+                    self.comb += ev.mem2block_dma.trigger.eq(mem2block.dma.done)
                 self.comb += [
-                    ev.card_detect.trigger.eq(phy.card_detect_irq),
+                    ev.card_detect.trigger.eq(phy.card_detect.status),
                     ev.cmd_done.trigger.eq(core.cmd_event.fields.done)
                 ]
 
