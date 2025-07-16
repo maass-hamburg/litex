@@ -2296,6 +2296,8 @@ class LiteXSoC(SoC):
                 self.phy = phy = SDPHY(pads, soc.platform.device, soc.sys_clk_freq, cmd_timeout=10e-1, data_timeout=10e-1)
                 self.core = core = SDCore(phy)
 
+                self.data_width = CSRConstant(len(phy.sdpads.data.o))
+
                 # Block2Mem DMA.
                 if "read" in mode:
                     bus = wishbone.Interface(
