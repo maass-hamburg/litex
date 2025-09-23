@@ -13,6 +13,40 @@ from litex.gen import *
 from litex.build.generic_platform import *
 from litex.soc.cores.clock.common import *
 
+# Efinix Clk Input ---------------------------------------------------------------------------------
+
+class EfinixClkInput(LiteXModule):
+    n = 0
+    def __init__(self, i, cd):
+        platform = LiteXContext.platform
+        self.name = f"clk_input{self.n}"
+
+        assert isinstance(cd, ClockDomain)
+
+        clk_name = f"{cd.name}_{self.name}_clk"
+        clk_out_name = clk_name # To unify constraints names
+        clk_out = platform.add_iface_io(clk_out_name)
+        self.comb += cd.clk.eq(clk_out)
+        # Efinity will generate xxx.pt.sdc constraints automaticaly,
+        # so, the user realy need to use the toplevel pin from the pll instead of an intermediate signal
+        # This is a dirty workaround. But i don't have any better
+        cd.clk = clk_out
+        platform.clks[cd.name] = clk_out_name
+
+        block = {
+            "type"       : "GPIO",
+            "size"       : 1,
+            "location"   : platform.get_pin_location(i)[0],
+            "properties" : platform.get_pin_properties(i),
+            "name"       : clk_out_name,
+            "mode"       : "INPUT_CLK",
+        }
+        platform.toolchain.ifacewriter.blocks.append(block)
+        platform.toolchain.excluded_ios.append(i)
+
+        EfinixClkInput.n += 1 # FIXME: Improve.
+
+
 # Efinix / TRIONPLL ----------------------------------------------------------------------------------
 
 class EFINIXPLL(LiteXModule):
